@@ -3,7 +3,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const getAdminFromDB = async (prams: any) => {
-  //   console.log({ prams });
+  const { searchTerm, ...filterData } = prams;
   const andConditions: Prisma.AdminWhereInput[] = [];
   /* [
     {
@@ -19,17 +19,30 @@ const getAdminFromDB = async (prams: any) => {
       },
     },
   ], */
+  //1. search
   const adminSearchAbleField = ["name", "email"];
-  if (prams?.searchTerm) {
+  if (searchTerm) {
     andConditions.push({
       OR: adminSearchAbleField.map((field) => ({
         [field]: {
-          contains: prams?.searchTerm,
+          contains: searchTerm,
           mode: "insensitive",
         },
       })),
     });
   }
+
+  //2. filter
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: filterData[key],
+        },
+      })),
+    });
+  }
+
   const whereConditions: Prisma.AdminWhereInput = { AND: andConditions };
   const result = await prisma.admin.findMany({
     where: whereConditions,
