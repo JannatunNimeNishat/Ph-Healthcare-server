@@ -3,11 +3,11 @@ import { adminService } from "./admin.service";
 
 const getAllAdmin = async (req: Request, res: Response) => {
   try {
-    const result = await adminService.getAdminFromDB();
+    const result = await adminService.getAdminFromDB(req.query);
 
     res.status(200).json({
       success: true,
-      message: "Data retrieved successfully",
+      message: "Admin data fetched",
       data: result,
     });
   } catch (error) {
