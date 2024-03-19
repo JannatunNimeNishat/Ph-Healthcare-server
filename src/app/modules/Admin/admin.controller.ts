@@ -7,8 +7,8 @@ const getAllAdmin = async (req: Request, res: Response) => {
   try {
     //amader tik kore deya field er bahirer field gulo asle jate pick na kore, saijonno req.query ta ke filter kore neya hosce pick function deya
     const filters = pick(req.query, adminFilterableFields);
-
-    const result = await adminService.getAdminFromDB(filters);
+    const options = pick(req.query, ["limit", "page"]);
+    const result = await adminService.getAdminFromDB(filters, options);
 
     res.status(200).json({
       success: true,
