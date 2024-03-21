@@ -21,8 +21,8 @@ const getAdminFromDB = async (prams: any, options: any) => {
       },
     },
   ], */
+  
   //1. search
-
   if (searchTerm) {
     andConditions.push({
       OR: adminSearchAbleField.map((field) => ({
