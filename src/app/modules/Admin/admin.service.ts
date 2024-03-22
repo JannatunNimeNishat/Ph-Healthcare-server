@@ -21,7 +21,7 @@ const getAdminFromDB = async (prams: any, options: any) => {
       },
     },
   ], */
-  
+
   //1. search
   if (searchTerm) {
     andConditions.push({
@@ -59,7 +59,13 @@ const getAdminFromDB = async (prams: any, options: any) => {
             createdAt: "desc",
           },
   });
-  return result;
+  return {
+    meta: {
+      page,
+      limit,
+    },
+    data: result,
+  };
 };
 
 export const adminService = {
