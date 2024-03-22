@@ -60,43 +60,46 @@ const getAdminFromDB = async (prams: any, options: any) => {
           },
   });
   const total = await prisma.admin.count({
-    where:whereConditions
-  })
+    where: whereConditions,
+  });
   return {
     meta: {
       page,
       limit,
-      total
+      total,
     },
     data: result,
   };
 };
 
-
-const getByIdFromDB = async(id:string)=>{
+const getByIdFromDB = async (id: string) => {
   const result = await prisma.admin.findUnique({
-    where:{
-      id:id
-    }
-  })
-  return result;
-}
-
-const updateIntoDB = async(id:string,data:Partial<Admin>)=>{
-  const result = await prisma.admin.update({
-    where:{
-      id:id
+    where: {
+      id: id,
     },
-    data:data
-  })
+  });
+  return result;
+};
+
+const updateIntoDB = async (id: string, data: Partial<Admin>) => {
+  await prisma.admin.findUniqueOrThrow({
+    where: { id: id },
+  });
+
+  const result = await prisma.admin.update({
+    where: {
+      id: id,
+    },
+    data: data,
+  });
 
   return result;
-}
+};
 
 export const adminService = {
   getAdminFromDB,
   getByIdFromDB,
-  updateIntoDB
+  updateIntoDB,
 };
 
 /** pagination logic
