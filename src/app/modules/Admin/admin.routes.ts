@@ -5,4 +5,6 @@ const router = Router();
 
 router.get("/", adminController.getAllAdmin);
 
+router.get('/:id',adminController.getById)
+
 export const AdminRoutes = router;
