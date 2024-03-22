@@ -5,8 +5,12 @@ const router = Router();
 
 router.get("/", adminController.getAllAdmin);
 
-router.get('/:id',adminController.getById);
+router.get("/:id", adminController.getById);
 
-router.patch('/:id',adminController.updateAdmin);
+router.patch("/:id", adminController.updateAdmin);
+
+router.delete("/:id", adminController.deleteAdmin);
+
+router.delete("/soft/:id", adminController.softDeleteAdmin);
 
 export const AdminRoutes = router;

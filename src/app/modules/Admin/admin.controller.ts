@@ -47,7 +47,7 @@ const getById = async (req: Request, res: Response) => {
 const updateAdmin = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const result = await adminService.updateIntoDB(id,req.body);
+    const result = await adminService.updateIntoDB(id, req.body);
     res.status(200).json({
       success: true,
       message: "Admin data fetched by id!",
@@ -62,8 +62,46 @@ const updateAdmin = async (req: Request, res: Response) => {
   }
 };
 
+const deleteAdmin = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const result = await adminService.deleteFromDB(id);
+    res.status(200).json({
+      success: true,
+      message: "Admin data deleted!",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error?.name || "Something went wrong",
+      error: error,
+    });
+  }
+};
+
+const softDeleteAdmin = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const result = await adminService.softDeleteFromDB(id);
+    res.status(200).json({
+      success: true,
+      message: "Admin data deleted!",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error?.name || "Something went wrong",
+      error: error,
+    });
+  }
+};
+
 export const adminController = {
   getAllAdmin,
   getById,
-  updateAdmin
+  updateAdmin,
+  deleteAdmin,
+  softDeleteAdmin,
 };

@@ -1,4 +1,4 @@
-import { Admin, Prisma } from "@prisma/client";
+import { Admin, Prisma, UserStatus } from "@prisma/client";
 import { adminSearchAbleField } from "./admin.constant";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import prisma from "../../../shared/prisma";
@@ -82,6 +82,7 @@ const getByIdFromDB = async (id: string) => {
 };
 
 const updateIntoDB = async (id: string, data: Partial<Admin>) => {
+  // checking the user is exists or not.
   await prisma.admin.findUniqueOrThrow({
     where: { id: id },
   });
@@ -96,10 +97,66 @@ const updateIntoDB = async (id: string, data: Partial<Admin>) => {
   return result;
 };
 
+const deleteFromDB = async (id: string) => {
+  // checking the user is exists or not.
+  await prisma.admin.findUniqueOrThrow({
+    where: {
+      id: id,
+    },
+  });
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const adminDeletedData = await transactionClient.admin.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    const userDeletedData = await transactionClient.user.delete({
+      where: {
+        email: adminDeletedData.email,
+      },
+    });
+    return adminDeletedData;
+  });
+  return result;
+};
+
+const softDeleteFromDB = async (id: string) => {
+  // checking the user is exists or not.
+  await prisma.admin.findUniqueOrThrow({
+    where: {
+      id: id,
+    },
+  });
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const adminDeletedData = await transactionClient.admin.update({
+      where: {
+        id: id,
+      },
+      data: {
+        isDeleted: true,
+      },
+    });
+
+    const userDeletedData = await transactionClient.user.update({
+      where: {
+        email: adminDeletedData.email,
+      },
+      data: {
+        status: UserStatus.DELETED,
+      },
+    });
+    return adminDeletedData;
+  });
+  return result;
+};
+
 export const adminService = {
   getAdminFromDB,
   getByIdFromDB,
   updateIntoDB,
+  deleteFromDB,
+  softDeleteFromDB,
 };
 
 /** pagination logic
