@@ -25,4 +25,17 @@ app.use("/api/v1/admin", AdminRoutes); */
 
 //global error handler
 app.use(globalErrorHandler);
+
+//not found route
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(httpStatus.NOT_FOUND).json({
+    success: false,
+    message: "API NOT FOUND!",
+    error: {
+      path: req.originalUrl,
+      message: "Your request path is not found",
+    },
+  });
+});
+
 export default app;
