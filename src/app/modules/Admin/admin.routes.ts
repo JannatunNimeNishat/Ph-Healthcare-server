@@ -1,23 +1,19 @@
-import { NextFunction, Request, Response, Router } from "express";
+import { Router } from "express";
 import { adminController } from "./admin.controller";
-import z, { AnyZodObject } from "zod";
+
 import validateRequest from "../../middleWares/validateRequest";
+import { AdminValidationSchemas } from "./admin.validations";
 const router = Router();
-
-const update = z.object({
-  body: z.object({
-    name: z.string().optional(),
-    contactNumber: z.string().optional(),
-  }),
-});
-
-
 
 router.get("/", adminController.getAllAdmin);
 
 router.get("/:id", adminController.getById);
 
-router.patch("/:id", validateRequest(update), adminController.updateAdmin);
+router.patch(
+  "/:id",
+  validateRequest(AdminValidationSchemas.update),
+  adminController.updateAdmin
+);
 
 router.delete("/:id", adminController.deleteAdmin);
 
