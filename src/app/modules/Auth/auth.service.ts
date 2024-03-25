@@ -5,6 +5,8 @@ import * as bcrypt from "bcrypt";
 import config from "../../../config";
 import { Secret } from "jsonwebtoken";
 import emailSender from "./emailSender";
+import ApiError from "../../errors/ApiError";
+import httpStatus from "http-status";
 
 const loginUserIntoDB = async (payload: {
   email: string;
@@ -150,9 +152,41 @@ const forgotPasswordIntoDB = async (payload: { email: string }) => {
   console.log(restPassLink);
 };
 
+const resetPasswordIntoDB = async (
+  token: string,
+  payload: { id: string; password: string }
+) => {
+  const userData = await prisma.user.findFirstOrThrow({
+    where: {
+      id: payload.id,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const isValidToken = jwtHelpers.verifyToken(
+    token,
+    config.jwt.reset_pass_secret as Secret
+  );
+
+  if (!isValidToken) {
+    throw new ApiError(httpStatus.FORBIDDEN, "FORBIDDEN");
+  }
+
+  const hashedPassword: string = await bcrypt.hash(payload?.password, 12);
+  await prisma.user.update({
+    where: {
+      id: userData.id,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+};
+
 export const authServices = {
   loginUserIntoDB,
   generatingAccessTokenFromRefreshTokenIntoDB,
   changePasswordIntoDB,
   forgotPasswordIntoDB,
+  resetPasswordIntoDB,
 };
