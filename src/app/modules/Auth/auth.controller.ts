@@ -41,7 +41,7 @@ const generatingAccessTokenFromRefreshToken = catchAsync(
   }
 );
 
-const changePassword = catchAsync(async (req: Request, res: Response) => {
+const changePassword = catchAsync(async (req: Request & {user?:any}, res: Response) => {
   const user = req.user;
 
   const result = await authServices.changePasswordIntoDB(user, req.body);
