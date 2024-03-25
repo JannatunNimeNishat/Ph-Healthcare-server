@@ -5,11 +5,12 @@ import { AdminRoutes } from "./app/modules/Admin/admin.routes";
 import router from "./app/routes";
 import httpStatus from "http-status";
 import globalErrorHandler from "./app/middleWares/globalErrorHandler";
-
+import cookieParser from "cookie-parser";
 const app: Application = express();
 app.use(cors());
 app.use(express.json());
 //parser
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req: Request, res: Response) => {
