@@ -2,6 +2,8 @@ import { UserStatus } from "@prisma/client";
 import { jwtHelpers } from "../../../helpers/jwtHelpers";
 import prisma from "../../../shared/prisma";
 import * as bcrypt from "bcrypt";
+import config from "../../../config";
+import { Secret } from "jsonwebtoken";
 
 const loginUserIntoDB = async (payload: {
   email: string;
@@ -10,7 +12,7 @@ const loginUserIntoDB = async (payload: {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: payload.email,
-      status: UserStatus.ACTIVE // user jodi deleted/blocked na hoy. delete/blocked hoa user ke login korte dibo na
+      status: UserStatus.ACTIVE, // user jodi deleted/blocked na hoy. delete/blocked hoa user ke login korte dibo na
     },
   });
   const isCorrectPassword: boolean = await bcrypt.compare(
@@ -27,8 +29,8 @@ const loginUserIntoDB = async (payload: {
       email: userData.email,
       role: userData.role,
     },
-    "abcdefg",
-    "5m"
+    config.jwt.jwt_secret as Secret,
+    config.jwt.expires_in as string
   );
 
   const refreshToken = jwtHelpers.generateToken(
@@ -36,8 +38,8 @@ const loginUserIntoDB = async (payload: {
       email: userData.email,
       role: userData.role,
     },
-    "abcdefgijkmnop",
-    "30d"
+    config.jwt.refresh_token_secret as Secret,
+    config.jwt.refresh_token_expires_in as string
   );
 
   return {
@@ -50,7 +52,7 @@ const loginUserIntoDB = async (payload: {
 const generatingAccessTokenFromRefreshTokenIntoDB = async (token: string) => {
   let decodedData;
   try {
-    decodedData = jwtHelpers.verifyToken(token, "abcdefgijkmnop");
+    decodedData = jwtHelpers.verifyToken(token, config.jwt.refresh_token_secret as Secret);
   } catch (error) {
     throw new Error("You are not authorized");
   }
@@ -59,7 +61,7 @@ const generatingAccessTokenFromRefreshTokenIntoDB = async (token: string) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: decodedData?.email,
-      status: UserStatus.ACTIVE // user jodi deleted/blocked na hoy. delete/blocked hoa user ke token dibo na
+      status: UserStatus.ACTIVE, // user jodi deleted/blocked na hoy. delete/blocked hoa user ke token dibo na
     },
   });
 
@@ -69,8 +71,8 @@ const generatingAccessTokenFromRefreshTokenIntoDB = async (token: string) => {
       email: userData.email,
       role: userData.role,
     },
-    "abcdefg",
-    "5m"
+    config.jwt.jwt_secret as Secret,
+    config.jwt.expires_in as string
   );
 
   return accessToken;
