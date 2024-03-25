@@ -24,24 +24,38 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 //generating access token from refresh token
-const generatingAccessTokenFromRefreshToken = catchAsync(async (req: Request, res: Response) => {
-  const { refreshToken } = req.cookies;
-  //console.log(refreshToken);
-  const result = await authServices.generatingAccessTokenFromRefreshTokenIntoDB(refreshToken);
+const generatingAccessTokenFromRefreshToken = catchAsync(
+  async (req: Request, res: Response) => {
+    const { refreshToken } = req.cookies;
+    const result =
+      await authServices.generatingAccessTokenFromRefreshTokenIntoDB(
+        refreshToken
+      );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Access token generated successfully",
+      data: result,
+    });
+  }
+);
+
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+
+  const result = await authServices.changePasswordIntoDB(user, req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Logged in successfully",
+    message: "Password change successfully",
     data: result,
-    /* data: {
-      accessToken:result.accessToken,
-      needPasswordChange:result.needPasswordChange
-    }, */
   });
 });
 
 export const authController = {
   loginUser,
   generatingAccessTokenFromRefreshToken,
+  changePassword,
 };
