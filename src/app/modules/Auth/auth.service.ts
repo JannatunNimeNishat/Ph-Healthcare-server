@@ -4,6 +4,7 @@ import prisma from "../../../shared/prisma";
 import * as bcrypt from "bcrypt";
 import config from "../../../config";
 import { Secret } from "jsonwebtoken";
+import emailSender from "./emailSender";
 
 const loginUserIntoDB = async (payload: {
   email: string;
@@ -82,20 +83,17 @@ const generatingAccessTokenFromRefreshTokenIntoDB = async (token: string) => {
 };
 
 const changePasswordIntoDB = async (user: any, payload: any) => {
- 
   const userData = await prisma.user.findFirstOrThrow({
     where: {
       email: user?.email,
-      status:UserStatus.ACTIVE
+      status: UserStatus.ACTIVE,
     },
   });
-
 
   const isCorrectPassword: boolean = await bcrypt.compare(
     payload.oldPassword,
     userData.password
-    );
-    
+  );
 
   if (!isCorrectPassword) {
     throw new Error("Password incorrect!");
@@ -103,7 +101,7 @@ const changePasswordIntoDB = async (user: any, payload: any) => {
 
   const hashedPassword: string = await bcrypt.hash(payload?.newPassword, 12);
 
- const result =  await prisma.user.update({
+  const result = await prisma.user.update({
     where: {
       email: userData?.email,
     },
@@ -112,14 +110,49 @@ const changePasswordIntoDB = async (user: any, payload: any) => {
       needPasswordChange: false,
     },
   });
-console.log(result);
+  console.log(result);
   return {
-    message:'Password change successfully'
-  }
+    message: "Password change successfully",
+  };
+};
+
+const forgotPasswordIntoDB = async (payload: { email: string }) => {
+  const userData = await prisma.user.findFirstOrThrow({
+    where: {
+      email: payload.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+  const resetPassToken = jwtHelpers.generateToken(
+    { email: userData.email, role: userData.role },
+    config.jwt.reset_pass_secret as Secret,
+    config.jwt.reset_pass_token_expires_in as string
+  );
+
+  //frontend rest-password page link
+  //  http://localhost:5173/reset-pass?email=ni7@gmail.com&token=fvbfbvfhbv
+
+  const restPassLink =
+    config.reset_pass_link + `?userId=${userData.id}&token=${resetPassToken}`;
+  await emailSender(
+    userData.email,
+    `
+  <div>
+    <p>Dear User,</p>
+    <p>Your password rest link: 
+        <a href=${restPassLink}>
+          <button>Reset Password</button>
+        </a> 
+    </p>
+  </div>
+  `
+  );
+  console.log(restPassLink);
 };
 
 export const authServices = {
   loginUserIntoDB,
   generatingAccessTokenFromRefreshTokenIntoDB,
   changePasswordIntoDB,
+  forgotPasswordIntoDB,
 };
