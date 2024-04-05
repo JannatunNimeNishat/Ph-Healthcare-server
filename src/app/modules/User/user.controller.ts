@@ -5,6 +5,7 @@ import { userFilterableFields } from "./user.constant";
 import pick from "../../../shared/pick";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
+import { IAuthUser } from "../../interfaces/common";
 
 const getAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -21,10 +22,11 @@ const getAllUsers = catchAsync(
     });
   }
 );
+
 const getMyProfile = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request & {user?:IAuthUser}, res: Response, next: NextFunction) => {
     const user = req.user;
-    const result = await userService.getMyProfileFromDB(user);
+    const result = await userService.getMyProfileFromDB(user as IAuthUser);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -104,9 +106,9 @@ const changeProfileStatus = catchAsync(
   }
 );
 const updateMyProfile = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request & {user?:IAuthUser}, res: Response , next: NextFunction) => {
     const user = req.user;
-    const result = await userService.updateMyProfileIntoDB(user,req);
+    const result = await userService.updateMyProfileIntoDB(user as IAuthUser,req);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,

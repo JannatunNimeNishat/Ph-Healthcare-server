@@ -7,6 +7,7 @@ import { Request } from "express";
 import { IPaginationOptions } from "../../interfaces/pagination";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { userSearchAbleFields } from "./user.constant";
+import { IAuthUser } from "../../interfaces/common";
 
 const getUserFromDB = async (prams: any, options: IPaginationOptions) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
@@ -77,7 +78,7 @@ const getUserFromDB = async (prams: any, options: IPaginationOptions) => {
   };
 };
 
-const getMyProfileFromDB = async (user) => {
+const getMyProfileFromDB = async (user:IAuthUser) => {
   const userInfo = await prisma.user.findFirstOrThrow({
     where: {
       email: user?.email,
@@ -234,7 +235,7 @@ const changeProfileStatusIntoDB = async (id: string, status: UserRole) => {
   return updateUserStatus;
 };
 
-const updateMyProfileIntoDB = async(user:any,req:Request)=>{
+const updateMyProfileIntoDB = async(user:IAuthUser,req:Request)=>{
 
   const userInfo = await prisma.user.findFirstOrThrow({
     where: {
