@@ -234,7 +234,7 @@ const changeProfileStatusIntoDB = async (id: string, status: UserRole) => {
   return updateUserStatus;
 };
 
-const updateMyProfileIntoDB = async(user,payload)=>{
+const updateMyProfileIntoDB = async(user:any,req:Request)=>{
 
   const userInfo = await prisma.user.findFirstOrThrow({
     where: {
@@ -242,34 +242,41 @@ const updateMyProfileIntoDB = async(user,payload)=>{
       status:UserStatus.ACTIVE
     }
   });
+
+  const file = req.file as IFile;
+  if(file){
+    const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+    req.body.profilePhoto = uploadToCloudinary?.secure_url
+  }
+
   let profileInfo;
   if (userInfo.role === UserRole.SUPER_ADMIN) {
     profileInfo = await prisma.admin.update({
       where: {
         email: userInfo.email,
       },
-      data:payload
+      data:req.body
     });
   } else if (userInfo.role === UserRole.ADMIN) {
     profileInfo = await prisma.admin.update({
       where: {
         email: userInfo.email,
       },
-      data:payload
+      data:req.body
     });
   } else if (userInfo.role === UserRole.DOCTOR) {
     profileInfo = await prisma.doctor.update({
       where: {
         email: userInfo.email,
       },
-      data:payload
+      data:req.body
     });
   } else if (userInfo.role === UserRole.PATIENT) {
     profileInfo = await prisma.patient.update({
       where: {
         email: userInfo.email,
       },
-      data:payload
+      data:req.body
     });
   }
 

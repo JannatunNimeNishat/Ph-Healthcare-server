@@ -106,7 +106,7 @@ const changeProfileStatus = catchAsync(
 const updateMyProfile = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
-    const result = await userService.updateMyProfileIntoDB(user,req.body);
+    const result = await userService.updateMyProfileIntoDB(user,req);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
