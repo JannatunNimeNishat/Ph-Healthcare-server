@@ -8,15 +8,10 @@ import { IPaginationOptions } from "../../interfaces/pagination";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { userSearchAbleFields } from "./user.constant";
 
-
-const getUserFromDB = async (
-  prams: any,
-  options: IPaginationOptions
-) => {
+const getUserFromDB = async (prams: any, options: IPaginationOptions) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = prams;
   const andConditions: Prisma.UserWhereInput[] = [];
- 
 
   //1. search
   if (searchTerm) {
@@ -42,8 +37,8 @@ const getUserFromDB = async (
     });
   }
 
-
-  const whereConditions: Prisma.UserWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
+  const whereConditions: Prisma.UserWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
   const result = await prisma.user.findMany({
     where: whereConditions,
     skip,
@@ -56,18 +51,18 @@ const getUserFromDB = async (
         : {
             createdAt: "desc",
           },
-      select:{
-        id:true,
-        email:true,
-        role:true,
-        needPasswordChange:true,
-        status:true,
-        createdAt:true,
-        updatedAt:true,
-        admin:true,
-        patient:true,
-        doctor:true
-      }
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      needPasswordChange: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      admin: true,
+      patient: true,
+      doctor: true,
+    },
   });
   const total = await prisma.user.count({
     where: whereConditions,
@@ -82,8 +77,50 @@ const getUserFromDB = async (
   };
 };
 
+const getMyProfileFromDB = async (user) => {
+  const userInfo = await prisma.user.findFirstOrThrow({
+    where: {
+      email: user?.email,
+    },
+    select:{
+      id:true,
+      email:true,
+      needPasswordChange:true,
+      role:true,
+      status:true
+    }
+  });
+  let profileInfo;
+  if (userInfo.role === UserRole.SUPER_ADMIN) {
+    profileInfo = await prisma.admin.findUnique({
+      where: {
+        email: userInfo.email,
+      },
+    });
+  } else if (userInfo.role === UserRole.ADMIN) {
+    profileInfo = await prisma.admin.findUnique({
+      where: {
+        email: userInfo.email,
+      },
+    });
+  } else if (userInfo.role === UserRole.DOCTOR) {
+    profileInfo = await prisma.doctor.findUnique({
+      where: {
+        email: userInfo.email,
+      },
+    });
+  } else if (userInfo.role === UserRole.PATIENT) {
+    profileInfo = await prisma.patient.findUnique({
+      where: {
+        email: userInfo.email,
+      },
+    });
+  }
 
-const createAdminIntoDB = async (req: Request):Promise<Admin> => {
+  return {...userInfo,...profileInfo};
+};
+
+const createAdminIntoDB = async (req: Request): Promise<Admin> => {
   /* console.log("File", req.file);
   console.log("Data", req.body.data); */
 
@@ -117,8 +154,7 @@ const createAdminIntoDB = async (req: Request):Promise<Admin> => {
   return result;
 };
 
-
-const createDoctorIntoDB = async (req: Request):Promise<Doctor> => {
+const createDoctorIntoDB = async (req: Request): Promise<Doctor> => {
   /* console.log("File", req.file);
   console.log("Data", req.body.data); */
 
@@ -153,9 +189,8 @@ const createDoctorIntoDB = async (req: Request):Promise<Doctor> => {
 };
 
 const createPatientIntoDB = async (req: Request) => {
-
   const file = req.file as IFile;
-//console.log(req.body);
+  //console.log(req.body);
   if (file) {
     const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
     req.body.patient.profilePhoto = uploadToCloudinary?.secure_url;
@@ -183,27 +218,26 @@ const createPatientIntoDB = async (req: Request) => {
   return result;
 };
 
-const changeProfileStatusIntoDB = async(id:string,status:UserRole)=>{
+const changeProfileStatusIntoDB = async (id: string, status: UserRole) => {
   const userData = await prisma.user.findFirstOrThrow({
-    where:{
-      id
-    }
-  })
-  const updateUserStatus = await prisma.user.update({
-    where:{
-      id
+    where: {
+      id,
     },
-    data:status
-  })
+  });
+  const updateUserStatus = await prisma.user.update({
+    where: {
+      id,
+    },
+    data: status,
+  });
   return updateUserStatus;
-}
-
+};
 
 export const userService = {
   createAdminIntoDB,
   createDoctorIntoDB,
   createPatientIntoDB,
   getUserFromDB,
-  changeProfileStatusIntoDB
-  
+  changeProfileStatusIntoDB,
+  getMyProfileFromDB,
 };
