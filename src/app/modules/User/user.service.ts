@@ -1,4 +1,4 @@
-import { Admin, Doctor, Prisma, UserRole } from "@prisma/client";
+import { Admin, Doctor, Prisma, UserRole, UserStatus } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import prisma from "../../../shared/prisma";
 import { fileUploader } from "../../../helpers/fileUploader";
@@ -81,6 +81,7 @@ const getMyProfileFromDB = async (user) => {
   const userInfo = await prisma.user.findFirstOrThrow({
     where: {
       email: user?.email,
+      status:UserStatus.ACTIVE
     },
     select:{
       id:true,
@@ -233,6 +234,48 @@ const changeProfileStatusIntoDB = async (id: string, status: UserRole) => {
   return updateUserStatus;
 };
 
+const updateMyProfileIntoDB = async(user,payload)=>{
+
+  const userInfo = await prisma.user.findFirstOrThrow({
+    where: {
+      email: user?.email,
+      status:UserStatus.ACTIVE
+    }
+  });
+  let profileInfo;
+  if (userInfo.role === UserRole.SUPER_ADMIN) {
+    profileInfo = await prisma.admin.update({
+      where: {
+        email: userInfo.email,
+      },
+      data:payload
+    });
+  } else if (userInfo.role === UserRole.ADMIN) {
+    profileInfo = await prisma.admin.update({
+      where: {
+        email: userInfo.email,
+      },
+      data:payload
+    });
+  } else if (userInfo.role === UserRole.DOCTOR) {
+    profileInfo = await prisma.doctor.update({
+      where: {
+        email: userInfo.email,
+      },
+      data:payload
+    });
+  } else if (userInfo.role === UserRole.PATIENT) {
+    profileInfo = await prisma.patient.update({
+      where: {
+        email: userInfo.email,
+      },
+      data:payload
+    });
+  }
+
+  return {...profileInfo};
+}
+
 export const userService = {
   createAdminIntoDB,
   createDoctorIntoDB,
@@ -240,4 +283,5 @@ export const userService = {
   getUserFromDB,
   changeProfileStatusIntoDB,
   getMyProfileFromDB,
+  updateMyProfileIntoDB
 };

@@ -8,9 +8,13 @@ import { userValidation } from "./user.validation";
 
 const router = Router();
 
-router.get('/',userController.getAllUsers)
+router.get("/", userController.getAllUsers);
 
-router.get('/me',auth(UserRole.SUPER_ADMIN,UserRole.ADMIN,UserRole.DOCTOR,UserRole.PATIENT),userController.getMyProfile)
+router.get(
+  "/me",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DOCTOR, UserRole.PATIENT),
+  userController.getMyProfile
+);
 
 router.post(
   "/create-admin",
@@ -28,7 +32,7 @@ router.post(
   fileUploader.upload.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = userValidation.createDoctor.parse(JSON.parse(req.body.data));
-    
+
     return userController.createDoctor(req, res, next);
   }
 );
@@ -37,15 +41,26 @@ router.post(
   fileUploader.upload.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = userValidation.createPatient.parse(JSON.parse(req.body.data));
-    
+
     return userController.createPatient(req, res, next);
   }
 );
 
-router.patch('/:id/status',auth(UserRole.SUPER_ADMIN,UserRole.ADMIN), userController.changeProfileStatus)
+router.patch(
+  "/:id/status",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  userController.changeProfileStatus
+);
 
 
-
-
+router.patch(
+  "/update-my-profile",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DOCTOR, UserRole.PATIENT),
+  fileUploader.upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    return userController.updateMyProfile(req, res, next);
+  }
+);
 
 export const userRoutes = router;
