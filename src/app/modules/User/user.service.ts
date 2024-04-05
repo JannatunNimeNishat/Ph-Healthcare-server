@@ -1,14 +1,15 @@
-import { UserRole } from "@prisma/client";
+import { Admin, Doctor, UserRole } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import prisma from "../../../shared/prisma";
 import { fileUploader } from "../../../helpers/fileUploader";
 import { IFile } from "../../interfaces/file";
+import { Request } from "express";
 
-const createAdminIntoDB = async (req: any) => {
+const createAdminIntoDB = async (req: Request):Promise<Admin> => {
   /* console.log("File", req.file);
   console.log("Data", req.body.data); */
 
-  const file: IFile = req.file;
+  const file = req.file as IFile;
   //console.log(req.body);
   if (file) {
     const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
@@ -39,11 +40,11 @@ const createAdminIntoDB = async (req: any) => {
 };
 
 
-const createDoctorIntoDB = async (req: any) => {
+const createDoctorIntoDB = async (req: Request):Promise<Doctor> => {
   /* console.log("File", req.file);
   console.log("Data", req.body.data); */
 
-  const file: IFile = req.file;
+  const file = req.file as IFile;
   //console.log(req.body);
   if (file) {
     const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
@@ -73,9 +74,41 @@ const createDoctorIntoDB = async (req: any) => {
   return result;
 };
 
+const createPatientIntoDB = async (req: Request) => {
+
+  const file = req.file as IFile;
+//console.log(req.body);
+  if (file) {
+    const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+    req.body.patient.profilePhoto = uploadToCloudinary?.secure_url;
+  }
+
+  const hashedPassword: string = await bcrypt.hash(req.body.password, 12);
+
+  const userData = {
+    email: req.body.patient.email,
+    password: hashedPassword,
+    role: UserRole.PATIENT,
+  };
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    await transactionClient.user.create({
+      data: userData,
+    });
+
+    const createdPatientData = await transactionClient.patient.create({
+      data: req.body.patient,
+    });
+    return createdPatientData;
+  });
+
+  return result;
+};
+
 
 export const userService = {
   createAdminIntoDB,
-  createDoctorIntoDB
+  createDoctorIntoDB,
+  createPatientIntoDB
   
 };

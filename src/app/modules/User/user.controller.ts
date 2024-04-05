@@ -34,8 +34,26 @@ const createDoctor = async (req: Request, res: Response, next: NextFunction) => 
     });
   }
 };
+const createPatient = async (req: Request, res: Response, next: NextFunction) => {
+  
+  try {
+    const result = await userService.createPatientIntoDB(req);
+    res.status(200).json({
+      success: true,
+      message: "Patient created successfully!",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error?.name || "Something went wrong",
+      error: error,
+    });
+  }
+};
 
 export const userController = {
   createAdmin,
-  createDoctor
+  createDoctor,
+  createPatient
 };
