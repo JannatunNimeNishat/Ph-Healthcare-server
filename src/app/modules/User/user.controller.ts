@@ -6,10 +6,8 @@ import pick from "../../../shared/pick";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
 
-
 const getAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-
     const filters = pick(req.query, userFilterableFields);
     const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
     console.log(options);
@@ -21,10 +19,8 @@ const getAllUsers = catchAsync(
       meta: result.meta,
       data: result.data,
     });
-    
   }
 );
-
 
 const createAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -42,8 +38,11 @@ const createAdmin = async (req: Request, res: Response, next: NextFunction) => {
     });
   }
 };
-const createDoctor = async (req: Request, res: Response, next: NextFunction) => {
-  
+const createDoctor = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const result = await userService.createDoctorIntoDB(req);
     res.status(200).json({
@@ -59,8 +58,11 @@ const createDoctor = async (req: Request, res: Response, next: NextFunction) => 
     });
   }
 };
-const createPatient = async (req: Request, res: Response, next: NextFunction) => {
-  
+const createPatient = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const result = await userService.createPatientIntoDB(req);
     res.status(200).json({
@@ -77,9 +79,23 @@ const createPatient = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
+const changeProfileStatus = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const result = await userService.changeProfileStatusIntoDB(id, req.body);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "User profile status changed!",
+      data: result,
+    });
+  }
+);
+
 export const userController = {
   createAdmin,
   createDoctor,
   createPatient,
-  getAllUsers
+  getAllUsers,
+  changeProfileStatus,
 };

@@ -183,11 +183,27 @@ const createPatientIntoDB = async (req: Request) => {
   return result;
 };
 
+const changeProfileStatusIntoDB = async(id:string,status:UserRole)=>{
+  const userData = await prisma.user.findFirstOrThrow({
+    where:{
+      id
+    }
+  })
+  const updateUserStatus = await prisma.user.update({
+    where:{
+      id
+    },
+    data:status
+  })
+  return updateUserStatus;
+}
+
 
 export const userService = {
   createAdminIntoDB,
   createDoctorIntoDB,
   createPatientIntoDB,
-  getUserFromDB
+  getUserFromDB,
+  changeProfileStatusIntoDB
   
 };
