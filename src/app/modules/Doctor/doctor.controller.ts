@@ -23,6 +23,16 @@ const getSingleDoctor = catchAsync(async (req: Request, res: Response) => {
       data: result
     });
   });
+const updateDoctor = catchAsync(async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const result = await DoctorService.updateDoctorIntoDB(id,req.body);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Doctor data successfully updated",
+      data: result
+    });
+  });
 
   
 const deleteDoctor = catchAsync(
@@ -57,5 +67,6 @@ const deleteDoctor = catchAsync(
     getDoctors,
     getSingleDoctor,
     deleteDoctor,
-    softDeleteDoctor
+    softDeleteDoctor,
+    updateDoctor
   }

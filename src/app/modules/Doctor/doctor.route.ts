@@ -8,6 +8,8 @@ const router = Router();
 router.get('/',DoctorController.getDoctors)
 router.get('/:id',DoctorController.getSingleDoctor)
 
+router.patch('/:id',DoctorController.updateDoctor)
+
 router.delete(
     "/:id",
     auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
