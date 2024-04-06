@@ -23,14 +23,11 @@ const updateDoctorIntoDB = async (id: string, payload: any) => {
   });
 
   await prisma.$transaction(async (transactionClient) => {
-    const updatedDoctorData = await transactionClient.doctor.update({
+     await transactionClient.doctor.update({
       where: {
         id,
       },
       data: doctorData,
-      include: {
-        doctorSpecialties: true,
-      },
     });
     if (specialties && specialties.length > 0) {
       // delete specialties
