@@ -5,7 +5,7 @@ import httpStatus from "http-status";
 import { DoctorService } from "./doctor.service";
 
 const getDoctors = catchAsync(async (req: Request, res: Response) => {
-    const result = await DoctorService.getSpecialtiesFromDB();
+    const result = await DoctorService.getDoctorsFromDB();
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -13,7 +13,18 @@ const getDoctors = catchAsync(async (req: Request, res: Response) => {
       data: result
     });
   });
+const getSingleDoctor = catchAsync(async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const result = await DoctorService.getSingleDoctorFromDB(id);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Doctor fetched successfully",
+      data: result
+    });
+  });
 
   export const DoctorController ={
-    getDoctors
+    getDoctors,
+    getSingleDoctor
   }
