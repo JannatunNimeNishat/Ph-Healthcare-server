@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
@@ -24,7 +24,38 @@ const getSingleDoctor = catchAsync(async (req: Request, res: Response) => {
     });
   });
 
+  
+const deleteDoctor = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
+  
+      const result = await DoctorService.deleteDoctorFromDB(id);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Doctor data deleted!",
+        data: result,
+      });
+    }
+  );
+  
+  const softDeleteDoctor = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
+  
+      const result = await DoctorService.softDeleteDoctorFromDB(id);
+      sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Doctor data deleted!",
+        data: result,
+      });
+    }
+  );
+
   export const DoctorController ={
     getDoctors,
-    getSingleDoctor
+    getSingleDoctor,
+    deleteDoctor,
+    softDeleteDoctor
   }
