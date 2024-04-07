@@ -1,10 +1,98 @@
-import { UserStatus } from "@prisma/client";
+import { Prisma, UserStatus } from "@prisma/client";
 import prisma from "../../../shared/prisma";
+import { IDoctorFilterRequest } from "./doctor.interface";
+import { IPaginationOptions } from "../../interfaces/pagination";
+import { paginationHelper } from "../../../helpers/paginationHelper";
+import { doctorSearchableFields } from "./doctor.constants";
 
-const getDoctorsFromDB = async () => {
+/* const getDoctorsFromDB = async () => {
   const result = await prisma.doctor.findMany();
   return result;
+}; */
+
+const getDoctorsFromDB = async (
+  filters: IDoctorFilterRequest,
+  options: IPaginationOptions,
+) => {
+  const { limit, page, skip } = paginationHelper.calculatePagination(options);
+  const { searchTerm, ...filterData } = filters;
+
+  const andConditions: Prisma.DoctorWhereInput[] = [];
+
+  if (searchTerm) {
+      andConditions.push({
+          OR: doctorSearchableFields.map(field => ({
+              [field]: {
+                  contains: searchTerm,
+                  mode: 'insensitive',
+              },
+          })),
+      });
+  }
+/* 
+  if (specialties && specialties.length > 0) {
+      andConditions.push({
+          doctorSpecialties: {
+              some: {
+                  specialities: {
+                      title: {
+                          contains: specialties,
+                          mode: 'insensitive',
+                      },
+                  },
+              },
+          },
+      });
+  } */
+
+  if (Object.keys(filterData).length > 0) {
+      const filterConditions = Object.keys(filterData).map(key => ({
+          [key]: {
+              equals: (filterData as any)[key],
+          },
+      }));
+      andConditions.push(...filterConditions);
+  }
+
+  andConditions.push({
+      isDeleted: false,
+  });
+
+  const whereConditions: Prisma.DoctorWhereInput =
+      andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const result = await prisma.doctor.findMany({
+      where: whereConditions,
+      skip,
+      take: limit,
+      orderBy: options.sortBy && options.sortOrder
+          ? { [options.sortBy]: options.sortOrder }
+          : { createdAt: 'desc' },
+      include: {
+          doctorSpecialties: {
+              include: {
+                  specialties:true
+                  // specialities: true
+              }
+          }
+      },
+  });
+
+  const total = await prisma.doctor.count({
+      where: whereConditions,
+  });
+
+  return {
+      meta: {
+          total,
+          page,
+          limit,
+      },
+      data: result,
+  };
 };
+
+
 const getSingleDoctorFromDB = async (id: string) => {
   const result = await prisma.doctor.findFirstOrThrow({
     where: {
