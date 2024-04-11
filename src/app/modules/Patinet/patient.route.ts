@@ -14,6 +14,10 @@ router.get(
     PatientController.getByIdFromDB
 );
 
+router.patch(
+    '/:id',
+    PatientController.updateIntoDB
+);
 
 
 export const PatientRoutes = router;
