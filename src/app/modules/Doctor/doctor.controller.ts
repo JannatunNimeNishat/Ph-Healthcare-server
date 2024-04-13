@@ -3,9 +3,13 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
 import { DoctorService } from "./doctor.service";
+import pick from "../../../shared/pick";
+import { doctorFilterableFields } from "./doctor.constants";
 
 const getDoctors = catchAsync(async (req: Request, res: Response) => {
-    const result = await DoctorService.getDoctorsFromDB();
+  const filters = pick(req.query, doctorFilterableFields);
+    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+    const result = await DoctorService.getDoctorsFromDB(filters,options);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
