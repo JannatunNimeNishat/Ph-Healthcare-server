@@ -19,5 +19,9 @@ router.patch(
     PatientController.updateIntoDB
 );
 
+router.delete('/:id',
+PatientController.deleteFromDB
+);
+
 
 export const PatientRoutes = router;

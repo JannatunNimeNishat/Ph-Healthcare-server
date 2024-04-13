@@ -49,8 +49,22 @@ const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
   });
 
 
+  const deleteFromDB = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await PatientService.deleteFromDB(id);
+  
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Patient deleted successfully',
+      data: result,
+    });
+  });
+
+
   export const PatientController = {
     getAllFromDB,
     getByIdFromDB,
-    updateIntoDB
+    updateIntoDB,
+    deleteFromDB
   };

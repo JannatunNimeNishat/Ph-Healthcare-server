@@ -96,9 +96,9 @@ const updateIntoDB = async (id: string, payload: Partial<IPatientUpdate>): Promi
     },
   });
 
-  const result = await prisma.$transaction(async (transactionClient) => {
+   await prisma.$transaction(async (transactionClient) => {
     // update Patient data
-    const updatedPatient = await prisma.patient.update({
+     await prisma.patient.update({
       where: {
         id,
       },
@@ -111,7 +111,7 @@ const updateIntoDB = async (id: string, payload: Partial<IPatientUpdate>): Promi
 
     //create or update patient health data
     if (patientHealthData) {
-      const healthData = await transactionClient.patientHealthData.upsert({
+       await transactionClient.patientHealthData.upsert({
         where: {
           patientId: patientInfo.id,
         },
@@ -125,7 +125,7 @@ const updateIntoDB = async (id: string, payload: Partial<IPatientUpdate>): Promi
 
     // create or update medical report
     if (medicalReport) {
-      const report = await transactionClient.medicalReport.create({
+      await transactionClient.medicalReport.create({
         data: {
           ...medicalReport,
           patientId: patientInfo.id,
@@ -148,10 +148,49 @@ const updateIntoDB = async (id: string, payload: Partial<IPatientUpdate>): Promi
   return responseData;
 };
 
+
+const deleteFromDB = async (id: string) => {
+  const result = await prisma.$transaction(async (tx)=>{
+    //delete medical reports. 
+    await tx.medicalReport.deleteMany({ //can have many medicalReport
+      where:{
+        patientId:id
+      }
+    })
+
+    //delete patient health data
+    await tx.patientHealthData.delete({
+      where:{
+        patientId:id
+      }
+    })
+
+    //delete the patient
+    const deletePatient = await tx.patient.delete({
+      where:{
+        id:id
+      }
+    })
+
+    //delete user
+    await tx.user.delete({
+      where:{
+        email:deletePatient.email
+      }
+    })
+
+    return deletePatient;
+  })
+  
+  return result;
+};
+
+
 export const PatientService = {
   getAllFromDB,
   getByIdFromDB,
   updateIntoDB,
+  deleteFromDB
 };
 
 
