@@ -5,7 +5,10 @@ import { UserRole } from "@prisma/client";
 
 const router = Router();
 
-router.post('/',auth(UserRole.SUPER_ADMIN,UserRole.ADMIN),ScheduleController.createSchedule)
-
+router.post(
+  "/",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  ScheduleController.createSchedule
+);
 
 export const ScheduleRoutes = router;
