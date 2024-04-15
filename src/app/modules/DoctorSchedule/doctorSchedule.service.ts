@@ -14,11 +14,14 @@ const createDoctorScheduleIntoDB = async (user:any,payload:{scheduleIds:string[]
     const result = await prisma.doctorSchedules.createMany({
         data:doctorScheduleData
     })
-    
+
     return result;
 
 }
 
+
+
+
 export const DoctorScheduleService = {
-    createDoctorScheduleIntoDB
+    createDoctorScheduleIntoDB,
 }

@@ -18,6 +18,7 @@ const createDoctorSchedule = catchAsync(async (req: Request & {user?:IAuthUser},
   });
 
 
+
   export const DoctorScheduleController = {
     createDoctorSchedule
   }
