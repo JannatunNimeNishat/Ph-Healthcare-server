@@ -157,6 +157,7 @@ const getAllScheduleFromDB = async (
   };
 };
 
+
 export const ScheduleService = {
   createScheduleIntoDB,
   getAllScheduleFromDB,
