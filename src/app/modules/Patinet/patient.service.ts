@@ -99,7 +99,7 @@ const updateIntoDB = async (id: string, payload: Partial<IPatientUpdate>): Promi
   });
 
    await prisma.$transaction(async (transactionClient) => {
-    // update Patient data
+    
      await prisma.patient.update({
       where: {
         id,
